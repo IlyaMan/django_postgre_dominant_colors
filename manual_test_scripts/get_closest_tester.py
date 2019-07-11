@@ -11,10 +11,17 @@ import os
 import sys
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("provide a color")
+        exit()
     color = sys.argv[1]
     url = "http://127.0.0.1:8000/get_closest/" + color
 
     r = requests.get(url)
+    if r.status_code != 200 or r.text == "Invalid color":
+        print("Invalid color")
+        exit()
+
     ids = json.loads(r.text)
     paths = []
     for i in ids:

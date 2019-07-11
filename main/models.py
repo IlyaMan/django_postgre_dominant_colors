@@ -89,17 +89,21 @@ def upload_image(images):
         path = f"images/{uuid.uuid4().hex}.jpeg"
         with open(path, "wb") as f:
             f.write(i.read())
-        im = Image(colors=get_dominant_color(path), path=path)
+        colors = get_dominant_color(path)
+        if colors is None:
+            return None
+        im = Image(colors=colors, path=path)
         im.save()
+        return "Ok"
 
 
 # Placeholder
 def get_dominant_color(path="", NUM_CLUSTERS=3):
-    if not os.path.isfile(path):
+    try:
+        im = cv2.imread(path)
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+    except cv2.error as e:
         return None
-
-    im = cv2.imread(path)
-    im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     im = cv2.resize(im, (150, 150))
     ar = np.asarray(im)
     shape = ar.shape

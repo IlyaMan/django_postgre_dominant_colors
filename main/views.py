@@ -9,7 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt  # for testing purposes
 def _get_closest(request, color):
     res = get_closest(color, 5)
-    return HttpResponse(res)
+    if res is None:
+        return HttpResponse("Invalid color")
+    else:
+        return HttpResponse(res)
 
 
 @csrf_exempt  # for testing purposes
@@ -18,10 +21,13 @@ def _get_image(request, id):
     if image is not None:
         return HttpResponse(image, content_type="image/jpeg")
     else:
-        return HttpResponse(None)
+        return HttpResponse("Invalid id")
 
 
 @csrf_exempt  # for testing purposes
 def _upload_image(request):
-    upload_image(request.FILES)
-    return HttpResponse()
+    res = upload_image(request.FILES)
+    if res is None:
+        return HttpResponse("Invalid file")
+    else:
+        return HttpResponse("Ok")
