@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db.models import F, Model
 import os.path
+import logging
 
 from lazysorted import LazySorted
 import uuid
@@ -42,14 +43,12 @@ class Image(models.Model):
 # Placeholder
 def get_closest(color, num):
     color = hex_to_rgb(color)
-    if color is None:
-        return None
 
-    def distance(v1, v2):
-        return (sum([(a - b)**2 for (a, b) in zip(v1, v2)]))**(1 / 2)
+    def distance(v1):
+        return (sum([(a - b)**2 for (a, b) in zip(v1, color)]))**(1 / 2)
 
     def key(x):
-        return min(map(lambda v: distance(v, color), x["colors"]))
+        return min(map(distance, x["colors"]))
 
     colors = Image.objects.all().values()
     return json.dumps(
@@ -63,54 +62,56 @@ def hex_to_rgb(hex):
     try:
         hex = str(hex)
         if len(hex) != 6:
-            return None
+            raise ValueError("Invalid color: incorrect length")
         return [int(hex[0:2], 16),  # r
                 int(hex[2:4], 16),  # g
                 int(hex[4:6], 16)]  # b
-    except ValueError:
-        return None
+    except ValueError as e:
+        raise ValueError("Invalid color: failed to parse as hex")
 
 
 def get_image(id):
     try:
         image = Image.objects.all().get(id=id)
-    except Image.DoesNotExist:
-        return None
+    except Image.DoesNotExist as e:
+        logging.error(e)
+        raise KeyError("Wrong id")
 
     try:
         with open(image.path, "rb") as f:
             return f.read()
-    except FileNotFoundError:
-        return None
+    except FileNotFoundError as e:
+        logging.error(e)
+        raise FileNotFoundError("File not found")
 
 
-def upload_image(images):
+def save_image(images):
     for i in images.values():
         path = f"images/{uuid.uuid4().hex}.jpeg"
         with open(path, "wb") as f:
             f.write(i.read())
         colors = get_dominant_color(path)
-        if colors is None:
-            return None
         im = Image(colors=colors, path=path)
         im.save()
         return "Ok"
 
 
 # Placeholder
-def get_dominant_color(path="", NUM_CLUSTERS=3):
+def get_dominant_color(path="", num_clusters=3):
     try:
         im = cv2.imread(path)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     except cv2.error as e:
-        return None
+        raise ValueError("Invalid file: not an image")
+
     im = cv2.resize(im, (150, 150))
     ar = np.asarray(im)
     shape = ar.shape
     ar = ar.reshape(scipy.product(shape[:2]), shape[2]).astype(float)
-    codes, _ = scipy.cluster.vq.kmeans(ar, NUM_CLUSTERS)
+
+    codes, _ = scipy.cluster.vq.kmeans(ar, num_clusters)
     vecs, _ = scipy.cluster.vq.vq(ar, codes)
     counts, bins = scipy.histogram(vecs, len(codes))
     index_max = np.argpartition(counts, -3)[-3:]
-    dominants = [list(map(int, codes[i])) for i in index_max]
-    return dominants
+
+    return [list(map(int, codes[i])) for i in index_max]

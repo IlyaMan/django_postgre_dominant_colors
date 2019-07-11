@@ -18,7 +18,7 @@ if __name__ == '__main__':
     url = "http://127.0.0.1:8000/get_closest/" + color
 
     r = requests.get(url)
-    if r.status_code != 200 or r.text == "Invalid color":
+    if r.status_code != 200:
         print("Invalid color")
         exit()
 
