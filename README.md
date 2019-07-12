@@ -7,15 +7,16 @@ PostgreSQL listening on port 5432, with name and username "postgres" and passwor
 `docker run --rm   --name pg-docker -e POSTGRES_PASSWORD=docker -d -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data  postgres`
 
 ## Setup:
-- `pip3 install -r requirements.txt`
-- `cd manual_test_scripts/`
-- `python3 images_downloader.py`
-- `cd ..`
-- `python3 manage.py migrate`
-- `python3 manage.py runserver`
-- `cd manual_test_scripts/`
-- `python3 database_uploader.py`
-
+`
+pip3 install -r requirements.txt
+cd manual_test_scripts/
+python3 images_downloader.py
+cd ..
+python3 manage.py migrate`
+run `python3 manage.py runserver` to start server
+`cd manual_test_scripts/
+python3 database_uploader.py
+`
 
 # Usage
 Django server listens on port 8000 provides three endpoints:
