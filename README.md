@@ -10,6 +10,9 @@ PostgreSQL listening on port 5432, with name and username "postgres" and passwor
 - `pip3 install -r requirements.txt`
 - `cd manual_test_scripts/`
 - `python3 images_downloader.py`
+- `cd ..`
+- `python3 manage.py runserver`
+- `cd manual_test_scripts/`
 - `python3 database_uploader.py`
 
 
