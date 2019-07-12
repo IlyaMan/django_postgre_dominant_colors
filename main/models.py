@@ -100,7 +100,7 @@ def get_dominant_color(path="", num_clusters=3):
     try:
         im = cv2.imread(path)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-    except cv2.error as e:  # FIXME "OpenCV Error"
+    except cv2.error as e:
         raise ValueError("Invalid file: not an image")
 
     im = cv2.resize(im, (150, 150))
