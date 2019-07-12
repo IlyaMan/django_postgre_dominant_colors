@@ -12,9 +12,13 @@ pip3 install -r requirements.txt
 cd manual_test_scripts/
 python3 images_downloader.py
 cd ..
-python3 manage.py migrate```
+python3 manage.py migrate
+```
+
 run `python3 manage.py runserver` to start server
-```cd manual_test_scripts/
+
+```
+cd manual_test_scripts/
 python3 database_uploader.py
 ```
 
