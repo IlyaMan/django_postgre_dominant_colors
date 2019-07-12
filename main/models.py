@@ -74,7 +74,6 @@ def get_image(id):
     try:
         image = Image.objects.all().get(id=id)
     except Image.DoesNotExist as e:
-        logging.error(e)
         raise KeyError("Wrong id")
 
     try:
@@ -101,7 +100,7 @@ def get_dominant_color(path="", num_clusters=3):
     try:
         im = cv2.imread(path)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-    except cv2.error as e:
+    except cv2.error as e:  # FIXME "OpenCV Error"
         raise ValueError("Invalid file: not an image")
 
     im = cv2.resize(im, (150, 150))

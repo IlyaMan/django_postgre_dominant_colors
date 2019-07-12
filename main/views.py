@@ -19,7 +19,9 @@ def _get_closest(request, color):
 def _get_image(request, id):
     try:
         return HttpResponse(get_image(id), content_type="image/jpeg")
-    except (KeyError, FileNotFoundError) as e:
+    except KeyError as e:
+        return HttpResponse(content=e, status=500)
+    except FileNotFoundError as e:
         return HttpResponse(content=e, status=500)
 
 
