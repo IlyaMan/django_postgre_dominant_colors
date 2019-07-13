@@ -43,8 +43,8 @@ class ImageTest(TestCase):
         self.assertEqual(self.upload_file("main/test_image.jpeg"), 200)
 
     def test_upload_image_invalid_file_type(self):
-        """Should return error 500 for an invalid file"""
-        self.assertEqual(self.upload_file("main/tests.py"), 500)
+        """Should return error 415 for invalid file"""
+        self.assertEqual(self.upload_file("main/tests.py"), 415)
 
     def test_get_image_valid(self):
         """Should return 200 for a valid id"""
@@ -53,7 +53,7 @@ class ImageTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_image_invalid(self):
-        """Should return an error 500 for an id not in range"""
+        """Should return an error 404 for id not in range"""
         id = Image.objects.all().last().id
         response = self.c.get(f"/get_image/{id + 1}")
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 404)

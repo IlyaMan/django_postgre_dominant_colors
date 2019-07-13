@@ -20,7 +20,7 @@ def _get_image(request, id):
     try:
         return HttpResponse(get_image(id), content_type="image/jpeg")
     except KeyError as e:
-        return HttpResponse(content=e, status=500)
+        return HttpResponse(content=e, status=404)
     except FileNotFoundError as e:
         return HttpResponse(content=e, status=500)
 
@@ -29,5 +29,7 @@ def _get_image(request, id):
 def _save_image(request):
     try:
         return HttpResponse(save_image(request.FILES))
-    except (ValidationError, ValueError) as e:
+    except ValidationError as e:
         return HttpResponse(content=e, status=500)
+    except ValueError as e:
+        return HttpResponse(content=e, status=415)
