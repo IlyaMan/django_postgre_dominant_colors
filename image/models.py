@@ -1,15 +1,13 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db.models import F, Model
-import os.path
 import logging
 
 from lazysorted import LazySorted
 import uuid
 
 import scipy
-from scipy.cluster.vq import kmeans, vq
+from scipy.cluster.vq import kmeans
 import numpy as np
 import cv2
 
@@ -22,6 +20,7 @@ def validate_range(value):
 
 
 class Image(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     colors = ArrayField(
         ArrayField(
             models.PositiveSmallIntegerField(
@@ -51,7 +50,7 @@ def get_closest_images(color, num):
 
     colors = Image.objects.all().values()
     return list(
-        map(lambda x: x["id"], LazySorted(colors, key=key)[0:num])
+        map(lambda x: str(x["id"]), LazySorted(colors, key=key)[0:num])
     )
 
 
@@ -72,6 +71,8 @@ def get_image(id):
         image = Image.objects.all().get(id=id)
     except Image.DoesNotExist as e:
         raise KeyError("Wrong id")
+    except ValidationError as e:
+        raise KeyError("Invalid id")
 
     try:
         with open(image.path, "rb") as f:
@@ -82,14 +83,14 @@ def get_image(id):
 
 
 def save_images(images):
-    for i in images.values():
+    for image in images.values():
         path = f"images/{uuid.uuid4().hex}.jpeg"
         with open(path, "wb") as f:
-            f.write(i.read())
+            f.write(image.read())
         colors = get_dominant_color(path)
         im = Image(colors=colors, path=path)
         im.save()
-        return "Ok"
+    return "Ok"
 
 
 # Placeholder
