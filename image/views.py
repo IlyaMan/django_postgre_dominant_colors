@@ -1,12 +1,14 @@
 from django.http import HttpResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.core.exceptions import ValidationError
-from image.models import get_image, save_images, get_closest_images
+from image.models import get_closest_images, Image
+import logging
 import json
 
 from django.views.decorators.csrf import csrf_exempt  # for testing purposes
 
 num_closest_images = 5
+
 
 @csrf_exempt  # for testing purposes
 @require_GET
@@ -21,18 +23,25 @@ def _get_closest(request, color):
 @require_GET
 def _get_image(request, id):
     try:
-        return HttpResponse(get_image(id), content_type="image/jpeg")
-    except KeyError as e:
-        return HttpResponse(content=e, status=404)
+        image = Image.objects.all().get(id=id)
+        return HttpResponse(image.image, content_type="image/jpeg")
+    except Image.DoesNotExist as e:
+        return HttpResponse(content=KeyError("Wrong id"), status=404)
+    except ValidationError as e:
+        return HttpResponse(content=KeyError("Invalid id"), status=404)
     except FileNotFoundError as e:
-        return HttpResponse(content=e, status=500)
+        logging.error(e)
+        return HttpResponse(content=FileNotFoundError("Image not found"), status=500)
 
 
 @csrf_exempt  # for testing purposes
 @require_POST
 def _save_images(request):
     try:
-        return HttpResponse(save_images(request.FILES))
+        for image in request.FILES.values():
+            im = Image(image=image)
+            im.save()
+        return HttpResponse()
     except ValidationError as e:
         return HttpResponse(content=e, status=500)
     except ValueError as e:

@@ -1,6 +1,7 @@
 from django.test import TestCase
 from image.models import Image
 from django.test import Client
+from django.core.files import File
 
 
 # Create your tests here.
@@ -9,8 +10,7 @@ from django.test import Client
 class ImageTest(TestCase):
     def setUp(self):
         self.c = Client()
-        im = Image(colors=[
-            [0, 0, 0] for i in range(3)], path="image/test_image.jpeg")
+        im = Image(image=File(open("image/test_image.jpeg", "rb")))
         im.save()
 
     def test_closest_valid(self):
@@ -64,7 +64,7 @@ class ImageTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_image_invalid(self):
-        """Should return an error 404 for id not in range"""
+        """Should return an error 404 for any invalid id"""
         id = Image.objects.all().last().id
         response = self.c.get(f"/image/0000-0000")
         self.assertEqual(response.status_code, 404)
