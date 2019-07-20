@@ -1,5 +1,5 @@
 from django.test import TestCase
-from main.models import Image
+from image.models import Image
 from django.test import Client
 
 # Create your tests here.
@@ -9,7 +9,7 @@ class ImageTest(TestCase):
     def setUp(self):
         self.c = Client()
         im = Image(colors=[
-            [0, 0, 0] for i in range(3)], path="main/test_image.jpeg")
+            [0, 0, 0] for i in range(3)], path="image/test_image.jpeg")
         im.save()
 
     def test_get_closest_valid(self):
@@ -40,11 +40,11 @@ class ImageTest(TestCase):
 
     def test_upload_image_valid(self):
         """Should return 200 for a valid image save"""
-        self.assertEqual(self.upload_file("main/test_image.jpeg"), 200)
+        self.assertEqual(self.upload_file("image/test_image.jpeg"), 200)
 
     def test_upload_image_invalid_file_type(self):
         """Should return error 415 for invalid file"""
-        self.assertEqual(self.upload_file("main/tests.py"), 415)
+        self.assertEqual(self.upload_file("image/tests.py"), 415)
 
     def test_get_image_valid(self):
         """Should return 200 for a valid id"""

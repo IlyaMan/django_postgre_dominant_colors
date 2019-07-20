@@ -1,16 +1,17 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
-from main.models import get_image, save_image, get_closest
+from image.models import get_image, save_images, get_closest_images
 import json
 
 from django.views.decorators.csrf import csrf_exempt  # for testing purposes
 
+num_closest_images = 5
 
 @csrf_exempt  # for testing purposes
 def _get_closest(request, color):
     try:
-        return HttpResponse(json.dumps(get_closest(color, 5)))
+        return HttpResponse(json.dumps(get_closest_images(color, num_closest_images)))
     except ValueError as e:
         return HttpResponse(content=e, status=500)
 
@@ -26,9 +27,9 @@ def _get_image(request, id):
 
 
 @csrf_exempt  # for testing purposes
-def _save_image(request):
+def _save_images(request):
     try:
-        return HttpResponse(save_image(request.FILES))
+        return HttpResponse(save_images(request.FILES))
     except ValidationError as e:
         return HttpResponse(content=e, status=500)
     except ValueError as e:

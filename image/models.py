@@ -7,7 +7,6 @@ import logging
 
 from lazysorted import LazySorted
 import uuid
-import json
 
 import scipy
 from scipy.cluster.vq import kmeans, vq
@@ -41,7 +40,7 @@ class Image(models.Model):
 
 
 # Placeholder
-def get_closest(color, num):
+def get_closest_images(color, num):
     color = hex_to_rgb(color)
 
     def distance(v1):
@@ -51,10 +50,8 @@ def get_closest(color, num):
         return min(map(distance, x["colors"]))
 
     colors = Image.objects.all().values()
-    return json.dumps(
-        list(
-            map(lambda x: x["id"], LazySorted(colors, key=key)[0:num])
-        )
+    return list(
+        map(lambda x: x["id"], LazySorted(colors, key=key)[0:num])
     )
 
 
@@ -84,7 +81,7 @@ def get_image(id):
         raise FileNotFoundError("File not found")
 
 
-def save_image(images):
+def save_images(images):
     for i in images.values():
         path = f"images/{uuid.uuid4().hex}.jpeg"
         with open(path, "wb") as f:
@@ -104,9 +101,9 @@ def get_dominant_color(path="", num_clusters=3):
         raise ValueError("Invalid file: not an image")
 
     im = cv2.resize(im, (150, 150))
-    ar = np.asarray(im)
+    ar = np.asarray(im, dtype=float)
     shape = ar.shape
-    ar = ar.reshape(scipy.product(shape[:2]), shape[2]).astype(float)
+    ar = ar.reshape(scipy.product(shape[:2]), shape[2])
 
     codes, _ = scipy.cluster.vq.kmeans(ar, num_clusters)
     vecs, _ = scipy.cluster.vq.vq(ar, codes)
