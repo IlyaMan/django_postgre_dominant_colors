@@ -1,5 +1,5 @@
 images/*
 !images/.gitkeep
-manual_test_scripts/images/*
-!manual_test_scripts/images/.gitkeep
+manual_tests/images/*
+!manual_tests/images/.gitkeep
 .idea
