@@ -20,8 +20,11 @@ run `python3 manage.py runserver` to start server
 pipenv run python manage.py fulfill_database
 ```
 
+Create a superuser if you want to acess Django Admin: `pipenv run python manage.py createsuperuser`
+
 # Usage
 Django server listens on port 8000 provides three endpoints:
 - `closest/color`, which returns ids of five images closest to given color (e.g. `closest/FF00FF`) (`GET`)
 - `image/id`, which returns an image by id (`GET`)
 - `image`, which saves an image from multipart form (`POST`)
+- `admin`, which gives an access to Django Admin (create a superuser to use it)

@@ -12,7 +12,7 @@ num_closest_images = 5
 
 @csrf_exempt  # for testing purposes
 @require_GET
-def _get_closest(request, color):
+def get_closest(request, color):
     try:
         return HttpResponse(json.dumps(get_closest_images(color, num_closest_images)))
     except ValueError as e:
@@ -21,7 +21,7 @@ def _get_closest(request, color):
 
 @csrf_exempt  # for testing purposes
 @require_GET
-def _get_image(request, id):
+def get_image(request, id):
     try:
         image = Image.objects.all().get(id=id)
         return HttpResponse(image.image, content_type="image/jpeg")
@@ -36,7 +36,7 @@ def _get_image(request, id):
 
 @csrf_exempt  # for testing purposes
 @require_POST
-def _save_images(request):
+def save_images(request):
     try:
         for image in request.FILES.values():
             im = Image(image=image)

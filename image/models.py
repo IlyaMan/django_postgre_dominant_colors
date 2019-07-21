@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-import logging
 
 from lazysorted import LazySorted
 import uuid
@@ -31,13 +30,12 @@ class Image(models.Model):
     image = models.ImageField(upload_to="", default="")
 
     def __str__(self):
-        return f"colors: {self.colors}"
+        return self.image.name
 
     def save(self, *args, **kwargs):
         self.colors = self.get_dominant_colors(self.image.read())
         self.clean_fields()
         super(Image, self).save(*args, **kwargs)
-
 
     def get_dominant_colors(self, image_bytes, num_clusters=3):
 
