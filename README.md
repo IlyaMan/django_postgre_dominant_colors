@@ -10,7 +10,7 @@ PostgreSQL listening on port 5432, with name and username "postgres" and passwor
 ## Setup:
 ```
 pipenv install
-pipenv run python python manage.py migrate
+pipenv run python manage.py migrate
 pipenv run python manage.py download_images
 ```
 
