@@ -14,7 +14,7 @@ pipenv run python manage.py migrate
 pipenv run python manage.py download_images
 ```
 
-run `python3 manage.py runserver` to start server
+run `pipenv run python manage.py runserver` to start server
 
 ```
 pipenv run python manage.py fulfill_database
