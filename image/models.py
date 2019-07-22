@@ -1,6 +1,6 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 
 from lazysorted import LazySorted
 import uuid
@@ -11,19 +11,12 @@ import numpy as np
 import cv2
 
 
-def validate_range(value):
-    if not 0 <= value <= 255:
-        raise ValidationError(
-            (f'{value} is not in range [0, 255]')
-        )
-
-
 class Image(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     colors = ArrayField(
         ArrayField(
             models.PositiveSmallIntegerField(
-                default=0, validators=[validate_range]),
+                default=0, validators=[MinValueValidator(0), MaxValueValidator(255)]),
             size=3),
         size=3
     )
@@ -32,49 +25,39 @@ class Image(models.Model):
     def __str__(self):
         return self.image.name
 
-    def save(self, *args, **kwargs):
-        self.colors = self.get_dominant_colors(self.image.read())
-        self.clean_fields()
-        super(Image, self).save(*args, **kwargs)
-
-    def get_dominant_colors(self, image_bytes, num_clusters=3):
-
+    def read_image_as_bytes(self) -> np.ndarray:
+        image_bytes = self.image.read()
         try:
             nparr = np.frombuffer(image_bytes, np.uint8)
             im = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         except cv2.error as e:
             raise ValueError("Invalid file: not an image")
+        return im
 
-        im = cv2.resize(im, (150, 150))
-        ar = np.asarray(im, dtype=float)
-        shape = ar.shape
-        ar = ar.reshape(scipy.product(shape[:2]), shape[2])
-
-        codes, _ = scipy.cluster.vq.kmeans(ar, num_clusters)
-        vecs, _ = scipy.cluster.vq.vq(ar, codes)
-        counts, bins = scipy.histogram(vecs, len(codes))
-        index_max = np.argpartition(counts, -3)[-3:]
-
-        return [list(map(int, codes[i])) for i in index_max]
+    def save(self, *args, **kwargs):
+        self.colors = get_dominant_colors(self.read_image_as_bytes())  # FIXME Under discussion
+        self.clean_fields()
+        super(Image, self).save(*args, **kwargs)
 
 
-def get_closest_images(color, num):
-    def hex_to_rgb(hex):
-        try:
-            hex = str(hex)
-            if len(hex) != 6:
-                raise ValueError("Invalid color: incorrect length")
-            return [int(hex[0:2], 16),  # r
-                    int(hex[2:4], 16),  # g
-                    int(hex[4:6], 16)]  # b
-        except ValueError as e:
-            raise ValueError("Invalid color: failed to parse as hex")
+def get_dominant_colors(im: np.ndarray, num_clusters=3):
+    im = cv2.resize(im, (150, 150))
+    ar = np.asarray(im, dtype=float)
+    shape = ar.shape
+    ar = ar.reshape(scipy.product(shape[:2]), shape[2])
 
-    color = hex_to_rgb(color)
+    codes, _ = scipy.cluster.vq.kmeans(ar, num_clusters)
+    vecs, _ = scipy.cluster.vq.vq(ar, codes)
+    counts, bins = scipy.histogram(vecs, len(codes))
+    index_max = np.argpartition(counts, -3)[-3:]
 
+    return [list(map(int, codes[i])) for i in index_max]
+
+
+def get_closest_images(rgb_color, num) -> list:
     def distance(v1):
-        return (sum([(a - b) ** 2 for (a, b) in zip(v1, color)])) ** (1 / 2)
+        return (sum([(a - b) ** 2 for (a, b) in zip(v1, rgb_color)])) ** (1 / 2)
 
     def key(x):
         return min(map(distance, x["colors"]))
