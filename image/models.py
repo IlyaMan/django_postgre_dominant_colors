@@ -30,6 +30,7 @@ class Image(models.Model):
         return self.image.name
 
     def read_image_as_bytes(self) -> np.ndarray:
+        self.image.open("rb")  # FIXME Can't reopen closed files -> don't close them
         image_bytes = self.image.read()
         try:
             nparr = np.frombuffer(image_bytes, np.uint8)
@@ -42,7 +43,8 @@ class Image(models.Model):
 
 @receiver(pre_save, sender=Image)
 def image_pre_save(sender, instance, **kwargs):
-    instance.clean_fields()
+    instance.read_image_as_bytes()
+    instance.clean_fields()  # Suddenly doesn't differ images from other file types
 
 
 @receiver(post_save, sender=Image)
@@ -50,8 +52,9 @@ def image_post_save(sender, instance, **kwargs):
     if instance.colors is None:  # Prevent recursion
         im_bytes = instance.read_image_as_bytes()
         instance.colors = get_dominant_colors(im_bytes)
+        instance.read_image_as_bytes()
+        instance.clean_fields()
         instance.save()
-    instance.clean_fields()
 
 
 def get_dominant_colors(im: np.ndarray, num_clusters=3):
