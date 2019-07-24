@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 # im = cv2.imread(path)
                 # cv2.imshow(path, im)
 
-            print("Images downloaded to temp/")
+            print("Images downloaded to manual_tests/temp/")
             input("press enter to clear temp")
 
             # OpenCV bug causes crashes here. Waiting for fix.

@@ -30,8 +30,9 @@ class Image(models.Model):
         return self.image.name
 
     def read_image_as_bytes(self) -> np.ndarray:
-        self.image.open("rb")  # FIXME Can't reopen closed files -> don't close them
+        self.image.open("rb")  # FIXME Can't reopen closed files -> I don't close them
         image_bytes = self.image.read()
+        # self.image.close() # FIXME
         try:
             nparr = np.frombuffer(image_bytes, np.uint8)
             im = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -43,8 +44,20 @@ class Image(models.Model):
 
 @receiver(pre_save, sender=Image)
 def image_pre_save(sender, instance, **kwargs):
-    instance.read_image_as_bytes()
-    instance.clean_fields()  # Suddenly doesn't differ images from other file types
+    # TODO test only, remove after
+    instance.image.open()  # TEST
+    print("File opened")
+    instance.image.close()
+    print("File closed")
+    print("Attempt to reopen file")
+    try:
+        instance.image.open()
+        print("Success")
+    except ValueError as e:
+        print("Failure:", e)  # TEST
+
+    instance.read_image_as_bytes()  # Throws error if instance.image is not an image
+    instance.clean_fields()
 
 
 @receiver(post_save, sender=Image)
