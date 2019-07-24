@@ -1,12 +1,10 @@
 """A script to test "closest" endpoint from the main project"""
 
-import requests
-import cv2
 import json
-import urllib.request
-import uuid
 import os
-import sys
+import uuid
+
+import requests
 from django.core.management.base import BaseCommand
 
 

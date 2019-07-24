@@ -1,7 +1,8 @@
 """A script to fulfill the database with images from "images/"""
 
-import requests
 import os
+
+import requests
 from django.core.management.base import BaseCommand
 
 

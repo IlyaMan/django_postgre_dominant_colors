@@ -1,11 +1,12 @@
-from django.http import HttpResponse
-from django.views.decorators.http import require_GET, require_POST
-from django.core.exceptions import ValidationError
-from image.models import get_closest_images, Image, get_dominant_colors
-import logging
 import json
+import logging
 
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt  # for testing purposes
+from django.views.decorators.http import require_GET, require_POST
+
+from image.models import get_closest_images, Image
 
 num_closest_images = 5
 
@@ -53,9 +54,6 @@ def save_images(request):
     try:
         for image in request.FILES.values():
             im = Image(image=image)
-            # image_data = im.read_image_as_bytes()  # FIXME Under discussion
-            # colors = get_dominant_colors(image_data)
-            # im.save(colors)
             im.save()
         return HttpResponse()
     except ValidationError as e:

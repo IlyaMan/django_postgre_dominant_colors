@@ -1,7 +1,8 @@
-from django.test import TestCase
-from image.models import Image
-from django.test import Client
 from django.core.files import File
+from django.test import Client
+from django.test import TestCase
+
+from image.models import Image
 
 
 # Create your tests here.

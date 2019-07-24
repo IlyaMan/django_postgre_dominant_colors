@@ -1,9 +1,10 @@
 """A script to download some images from pexels.com"""
 
-import requests
-from bs4 import BeautifulSoup
 import urllib.request
 import uuid
+
+import requests
+from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 
 

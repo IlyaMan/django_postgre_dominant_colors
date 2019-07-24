@@ -1,14 +1,15 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db import models
-from django.contrib.postgres.fields import ArrayField
-
-from lazysorted import LazySorted
 import uuid
 
-import scipy
-from scipy.cluster.vq import kmeans
-import numpy as np
 import cv2
+import numpy as np
+import scipy
+from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+from lazysorted import LazySorted
+from scipy.cluster.vq import kmeans
 
 
 class Image(models.Model):
@@ -16,9 +17,12 @@ class Image(models.Model):
     colors = ArrayField(
         ArrayField(
             models.PositiveSmallIntegerField(
-                default=0, validators=[MinValueValidator(0), MaxValueValidator(255)]),
+                validators=[MinValueValidator(0), MaxValueValidator(255)]),
             size=3),
-        size=3
+        size=3,
+        null=True,
+        blank=True,
+        default=None
     )
     image = models.ImageField(upload_to="", default="")
 
@@ -35,10 +39,19 @@ class Image(models.Model):
             raise ValueError("Invalid file: not an image")
         return im
 
-    def save(self, *args, **kwargs):
-        self.colors = get_dominant_colors(self.read_image_as_bytes())  # FIXME Under discussion
-        self.clean_fields()
-        super(Image, self).save(*args, **kwargs)
+
+@receiver(pre_save, sender=Image)
+def image_pre_save(sender, instance, **kwargs):
+    instance.clean_fields()
+
+
+@receiver(post_save, sender=Image)
+def image_post_save(sender, instance, **kwargs):
+    if instance.colors is None:  # Prevent recursion
+        im_bytes = instance.read_image_as_bytes()
+        instance.colors = get_dominant_colors(im_bytes)
+        instance.save()
+    instance.clean_fields()
 
 
 def get_dominant_colors(im: np.ndarray, num_clusters=3):
@@ -62,7 +75,7 @@ def get_closest_images(rgb_color, num) -> list:
     def key(x):
         return min(map(distance, x["colors"]))
 
-    colors = Image.objects.all().values()
+    colors = Image.objects.all().exclude(colors__isnull=True).values()
     return list(
         map(lambda x: str(x["id"]), LazySorted(colors, key=key)[0:num])
     )
