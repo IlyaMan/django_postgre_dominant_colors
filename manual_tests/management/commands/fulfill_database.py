@@ -9,6 +9,8 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     def handle(self, *args, **options):
         for path in os.listdir("manual_tests/images"):
+            if path.startswith("."):
+                continue
             url = "http://127.0.0.1:8000/image"
             files = {'image': open("manual_tests/images/" + path, 'rb')}
             requests.post(url, files=files)
