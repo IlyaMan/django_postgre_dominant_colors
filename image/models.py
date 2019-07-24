@@ -30,9 +30,9 @@ class Image(models.Model):
         return self.image.name
 
     def read_image_as_bytes(self) -> np.ndarray:
-        self.image.open("rb")  # FIXME Can't reopen closed files -> I don't close them
+        self.image.open("rb")
         image_bytes = self.image.read()
-        # self.image.close() # FIXME
+        # self.image.close() # FIXME Can't reopen closed files -> I don't close them
         try:
             nparr = np.frombuffer(image_bytes, np.uint8)
             im = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
