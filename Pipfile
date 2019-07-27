@@ -15,6 +15,7 @@ lazysorted = {editable = true,version = "*"}
 requests = {editable = true,version = "*"}
 psycopg2-binary = {editable = true,version = "*"}
 pillow = "*"
+graphene-django = "*"
 
 [requires]
 python_version = "3.6"

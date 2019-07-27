@@ -37,8 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.postgres'
+    'django.contrib.postgres',
+    'graphene_django'
 ]
+
+GRAPHENE = {
+    'SCHEMA': 'main.schema.schema'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,7 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'image.urls'
+ROOT_URLCONF = 'main.urls'
 
 TEMPLATES = [
     {

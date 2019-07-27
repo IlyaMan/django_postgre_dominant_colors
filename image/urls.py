@@ -10,4 +10,5 @@ urlpatterns = [
     re_path("^closest/(?P<color>[0-9 A-F a-f]{6}$)",
             views.get_closest, name='get_closest'),
     path('admin', admin.site.urls),
+
 ]
